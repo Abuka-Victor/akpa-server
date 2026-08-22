@@ -22,12 +22,18 @@ COPY tailwind.config.js ./
 COPY static/css/global.css ./static/css/
 COPY templates/ ./templates/
 
-# Tailwind v4. The CLI moved to its own package in v4 — `npx tailwindcss` is v3
-# and will not understand an `@import "tailwindcss"` input file.
-RUN npx @tailwindcss/cli@4 \
+COPY package.json package-lock.json ./
+RUN npm ci
+
+RUN npx tailwindcss \
       -i ./static/css/global.css \
       -o ./static/css/output.css \
       --minify
+
+# Fail loudly if Tailwind produced a near-empty stylesheet. Without this the
+# build "succeeds" and the site deploys completely unstyled.
+RUN test "$(wc -c < ./static/css/output.css)" -gt 5000 \
+      || (echo "ERROR: output.css is suspiciously small — @source in global.css is probably not matching your .templ files" && exit 1)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2: Go
