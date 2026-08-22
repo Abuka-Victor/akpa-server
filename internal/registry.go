@@ -13,6 +13,8 @@ type Registry struct {
 	timers map[string]*time.Timer
 }
 
+var AppRegistry = NewRegistry()
+
 const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 func generateID() string {

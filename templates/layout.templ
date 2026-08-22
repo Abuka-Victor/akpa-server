@@ -1,0 +1,23 @@
+package templates
+
+type PageData struct {
+    Title string
+}
+
+templ Layout(data PageData) {
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{ data.Title }</title>
+        <link rel="stylesheet" href="/static/css/output.css" />
+    </head>
+    <body class="bg-gray-100 text-gray-900 min-h-screen flex items-center justify-center">
+        <div class="p-8 bg-white shadow-lg rounded-2xl max-w-md text-center">
+            <h1 class="text-3xl font-extrabold text-blue-600 mb-4">Akpa Server</h1>
+            <p class="text-gray-600">Type-safe components styled efficiently.</p>
+        </div>
+    </body>
+    </html>
+}

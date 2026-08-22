@@ -1,35 +1,55 @@
 package main
 
 import (
-	internals "akpa/server/internal"
+	"akpa/server/internal"
+	"akpa/server/templates"
 	"fmt"
-	"net"
+	"net/http"
+	"sync"
+
+	"github.com/a-h/templ"
 )
 
-var registry = internals.NewRegistry()
-
 func main() {
-	fmt.Println("Hello, World!")
-	listener, err := net.Listen("tcp", ":8080")
-	if err != nil {
-		fmt.Println("Error starting TCP socket server:", err)
-		return
-	}
-	defer listener.Close()
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-	for {
-		conn, err := listener.Accept()
+	fmt.Println("Starting AKPA server...")
+	go func() {
+		defer wg.Done()
+		internal.RunTCPServer()
+	}()
+
+	// start the http server
+	go func() {
+		defer wg.Done()
+
+		mux := http.NewServeMux()
+
+		fileServer := http.FileServer(http.Dir("./static"))
+		mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+
+		// mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		// 	http.ServeFile(w, r, "./static/favicon.ico")
+		// })
+
+		// mux.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		// 	http.ServeFile(w, r, "./static/robots.txt")
+		// })
+
+		// mux.HandleFunc("/sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
+		// 	http.ServeFile(w, r, "./static/sitemap.xml")
+		// })
+
+		mux.Handle("/", templ.Handler(templates.Layout(templates.PageData{
+			Title: "Akpa Server",
+		})))
+
+		err := http.ListenAndServe(":8081", mux)
 		if err != nil {
-			fmt.Println("Error accepting connection:", err)
-			continue
+			fmt.Println("Error starting HTTP server:", err)
 		}
-		fmt.Println("Somebody connected!")
+	}()
 
-		connId := registry.AddTunnel(conn)
-		fmt.Println("The connection ID is:", connId)
-
-		conn.Write([]byte("Your link is live at https://akpa.victorabuka.com/" + connId + "\n"))
-		fmt.Println("Sent url link for", connId)
-
-	}
+	wg.Wait()
 }
