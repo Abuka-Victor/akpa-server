@@ -26,7 +26,7 @@ func RunTCPServer() {
 		fmt.Println("The connection ID is:", connId)
 
 		if os.Getenv("APP_ENV") == "production" {
-			conn.Write([]byte("Your link is live at https://akpa.victorabuka.com/live/" + connId + "\n"))
+			conn.Write([]byte(connId + "\n"))
 		} else {
 			conn.Write([]byte(connId + "\n"))
 			fmt.Println("Sent url link for", connId)
