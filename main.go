@@ -63,7 +63,7 @@ func main() {
 			Title:       "Akpa Server",
 			InstallCmd:  "`curl -fsSL https://akpa.victorabuka.com/install.sh | bash`",
 			Version:     "1.0",
-			GitHubURL:   "https://github.com/Abuka-Victor/akpa-server",
+			GitHubURL:   "https://github.com/Abuka-Victor/akpa-cli",
 			LiveTunnels: internal.AppRegistry.TunnelCount(),
 		})))
 
