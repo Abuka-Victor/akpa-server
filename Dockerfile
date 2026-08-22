@@ -16,13 +16,13 @@ WORKDIR /build
 # Tailwind scans your source for class names, so the .templ files must be
 # present before it runs — not just the CSS input file.
 COPY tailwind.config.js ./
-COPY static/css/input.css ./static/css/
+COPY static/css/global.css ./static/css/
 COPY templates/ ./templates/
 
 # Pinned so a Tailwind release can't change your CSS without you asking.
 # Using Tailwind v4? Replace with: npx @tailwindcss/cli@4 -i ... -o ...
-RUN npx tailwindcss@3.4.17 \
-      -i ./static/css/input.css \
+RUN npx @tailwindcss/cli@4 \
+      -i ./static/css/global.css \
       -o ./static/css/output.css \
       --minify
 
