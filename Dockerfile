@@ -15,12 +15,15 @@ WORKDIR /build
 
 # Tailwind scans your source for class names, so the .templ files must be
 # present before it runs — not just the CSS input file.
+# tailwind.config.js is kept for future theming. Note that Tailwind v4 does NOT
+# read it automatically — it is only used if global.css has a matching
+# `@config` line. Copied here so it is available the moment you wire it up.
 COPY tailwind.config.js ./
 COPY static/css/global.css ./static/css/
 COPY templates/ ./templates/
 
-# Pinned so a Tailwind release can't change your CSS without you asking.
-# Using Tailwind v4? Replace with: npx @tailwindcss/cli@4 -i ... -o ...
+# Tailwind v4. The CLI moved to its own package in v4 — `npx tailwindcss` is v3
+# and will not understand an `@import "tailwindcss"` input file.
 RUN npx @tailwindcss/cli@4 \
       -i ./static/css/global.css \
       -o ./static/css/output.css \
@@ -29,24 +32,22 @@ RUN npx @tailwindcss/cli@4 \
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2: Go
 # ─────────────────────────────────────────────────────────────────────────────
-FROM golang:1.23-alpine AS build
+FROM golang:1.25-alpine AS build
 
 WORKDIR /build
-
-RUN apk add --no-cache git
 
 # Dependencies first, as their own layer. Docker caches this, so editing a .go
 # file doesn't re-download every module.
 COPY go.mod go.sum ./
 RUN go mod download
 
-# templ is a Go tool, so installing it here costs almost nothing.
-RUN go install github.com/a-h/templ/cmd/templ@latest
-
 COPY . .
 
-# Generates templates/*_templ.go from your .templ files.
-RUN templ generate
+# Your go.mod uses the `tool` directive (Go 1.24+), so templ is already pinned
+# there as a tool dependency. `go tool` runs that exact version — better than
+# `go install ...@latest`, which would fetch whatever is newest today and could
+# change your generated output between builds.
+RUN go tool templ generate
 
 # CGO_ENABLED=0 gives a static binary that runs on a bare Alpine image.
 RUN CGO_ENABLED=0 GOOS=linux go build \
