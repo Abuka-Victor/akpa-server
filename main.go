@@ -1,16 +1,24 @@
 package main
 
 import (
+	"akpa/server/handlers/api"
 	"akpa/server/internal"
 	"akpa/server/templates"
+
 	"fmt"
 	"net/http"
 	"sync"
 
 	"github.com/a-h/templ"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+
+	if err := godotenv.Load(); err != nil {
+		fmt.Println("No .env file found, relying on system environment variables")
+	}
+
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -44,6 +52,9 @@ func main() {
 		mux.Handle("/", templ.Handler(templates.Layout(templates.PageData{
 			Title: "Akpa Server",
 		})))
+
+		mux.HandleFunc("GET /live/{id}/", api.HandleLiveView)
+		mux.HandleFunc("GET /live/{id}", api.HandleLiveView)
 
 		err := http.ListenAndServe(":8081", mux)
 		if err != nil {

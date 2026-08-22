@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"net"
+	"os"
 )
 
 func RunTCPServer() {
@@ -24,9 +25,12 @@ func RunTCPServer() {
 		connId := AppRegistry.AddTunnel(conn)
 		fmt.Println("The connection ID is:", connId)
 
-		// conn.Write([]byte("Your link is live at https://akpa.victorabuka.com/" + connId + "\n"))
-		conn.Write([]byte("Your link is live at https://localhost:8081/" + connId + "\n"))
-		fmt.Println("Sent url link for", connId)
+		if os.Getenv("APP_ENV") == "production" {
+			conn.Write([]byte("Your link is live at https://akpa.victorabuka.com/live/" + connId + "\n"))
+		} else {
+			conn.Write([]byte("Your link is live at http://localhost:8081/live/" + connId + "\n"))
+			fmt.Println("Sent url link for", connId)
+		}
 
 	}
 }
