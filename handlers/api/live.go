@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 )
 
 var connMutex sync.Mutex
@@ -27,7 +28,6 @@ func HandleLiveView(w http.ResponseWriter, r *http.Request) {
 	newPath = strings.ReplaceAll(newPath, "//", "/")
 
 	r.URL.Path = newPath
-	r.RequestURI = newPath
 
 	// Optional: Validate or look up the ID in your database here
 	conn := internal.AppRegistry.FindTunnelByID(liveID)
@@ -37,6 +37,7 @@ func HandleLiveView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 2. Ask connection to render the live page
+	conn.SetWriteDeadline(time.Now().Add(30 * time.Second))
 	err := r.Write(conn)
 	if err != nil {
 		fmt.Println("Error writing request to connection:", err)
@@ -49,6 +50,7 @@ func HandleLiveView(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("The request uri is:", r.RequestURI)
 
 	// 3. Read ONLY one HTTP response from the connection (does NOT wait for connection EOF)
+	conn.SetReadDeadline(time.Now().Add(30 * time.Second))
 	resp, err := http.ReadResponse(bufio.NewReader(conn), r)
 	if err != nil {
 		fmt.Println("Error reading response from tunnel:", err)

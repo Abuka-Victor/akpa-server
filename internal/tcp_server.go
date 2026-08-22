@@ -7,7 +7,7 @@ import (
 )
 
 func RunTCPServer() {
-	listener, err := net.Listen("tcp", ":8080")
+	listener, err := net.Listen("tcp", ":7000")
 	if err != nil {
 		fmt.Println("Error starting TCP socket server:", err)
 		return

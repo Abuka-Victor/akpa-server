@@ -49,8 +49,22 @@ func main() {
 		// 	http.ServeFile(w, r, "./static/sitemap.xml")
 		// })
 
-		mux.Handle("/", templ.Handler(templates.Layout(templates.PageData{
-			Title: "Akpa Server",
+		// mux.Handle("/", templ.Handler(templates.Layout(templates.PageData{
+		// 	Title: "Akpa Server",
+		// })))
+
+		mux.HandleFunc("GET /install.sh", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			w.Header().Set("Cache-Control", "public, max-age=300")
+			http.ServeFile(w, r, "./static/install.sh")
+		})
+
+		mux.Handle("/", templ.Handler(templates.Home(templates.HomeData{
+			Title:       "Akpa Server",
+			InstallCmd:  "`curl -fsSL https://akpa.victorabuka.com/install.sh | bash`",
+			Version:     "1.0",
+			GitHubURL:   "https://github.com/Abuka-Victor/akpa-server",
+			LiveTunnels: internal.AppRegistry.TunnelCount(),
 		})))
 
 		mux.HandleFunc("GET /live/{id}/", api.HandleLiveView)

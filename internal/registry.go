@@ -65,3 +65,9 @@ func (r *Registry) RemoveTunnel(id string) {
 		delete(r.tunnel, id)
 	}
 }
+
+func (r *Registry) TunnelCount() int {
+	r.ru.RLock()
+	defer r.ru.RUnlock()
+	return len(r.tunnel)
+}
